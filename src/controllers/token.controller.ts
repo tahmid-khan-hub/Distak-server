@@ -1,17 +1,27 @@
 import { Request, Response } from "express";
-import { generateToken, hashToken } from "../utils/token.js";
 import { pool } from "../db.js";
+import crypto from "crypto";
+
+export function hashToken(token: string): string {
+  return crypto.createHash("sha256").update(token).digest("hex");
+}
 
 export const generateTokenHandler = async(req: Request, res: Response) => {
     try {
-        const {plan} = req.body;
+        const { token, plan } = req.body;
         
-        if(!plan) return res.status(400).json({error: "Plan is required"}); 
+        if(!plan || !token) return res.status(400).json({error: "Token and plan are required"}); 
 
-        // generate token and hash it
-        const token = generateToken(16);
+        if (token.length < 16) return res.status(400).json({ error: "Invalid token format" });
+
         const tokenHash = hashToken(token);
 
+        // Check if token already exists
+        const existing = await pool.query(
+            "SELECT id FROM users WHERE token_hash = $1", [tokenHash] );
+
+        if (existing.rowCount && existing.rowCount > 0) return res.status(409).json({ error: "Token already exists" });
+    
         let expiresAt: Date | null = null;
 
         if (plan === "2h") expiresAt = new Date(Date.now() + 2 * 60 * 60 * 1000);
@@ -23,7 +33,7 @@ export const generateTokenHandler = async(req: Request, res: Response) => {
             [tokenHash, plan, expiresAt]
         );
 
-        res.status(200).json({ token });
+        res.status(201).json({ success:true, message: "Token generated successfully" });
     } catch (error) {
         console.error(error);
         res.status(500).json({ error: "Server error" });
