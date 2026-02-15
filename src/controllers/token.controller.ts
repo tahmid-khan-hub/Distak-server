@@ -29,7 +29,7 @@ export const generateTokenHandler = async(req: Request, res: Response) => {
         else if (plan === "24h") expiresAt = new Date(Date.now() + 24 * 60 * 60 * 1000);
         
         await pool.query(
-            "INSERT INTO tokens (token_hash, plan,  expires_at) VALUES ($1, $2, $3)",
+            "INSERT INTO users (token_hash, plan,  expires_at) VALUES ($1, $2, $3)",
             [tokenHash, plan, expiresAt]
         );
 
