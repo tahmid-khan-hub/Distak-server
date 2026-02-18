@@ -33,6 +33,14 @@ export const generateTokenHandler = async(req: Request, res: Response) => {
             [tokenHash, plan, expiresAt]
         );
 
+        // set cookie
+        res.cookie("chat_token", token, {
+            httpOnly: true,
+            secure: false, // set to true in production with HTTPS
+            sameSite: "lax",
+            expires: expiresAt || undefined,
+        });
+
         res.status(201).json({ success:true, message: "Token generated successfully" });
     } catch (error) {
         console.error(error);
