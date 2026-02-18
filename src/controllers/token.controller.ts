@@ -1,10 +1,6 @@
 import { Request, Response } from "express";
 import { pool } from "../db.js";
-import crypto from "crypto";
-
-export function hashToken(token: string): string {
-  return crypto.createHash("sha256").update(token).digest("hex");
-}
+import { hashToken } from "../utils/hash.js";
 
 export const generateTokenHandler = async(req: Request, res: Response) => {
     try {

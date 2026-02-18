@@ -1,10 +1,6 @@
 import { Request, Response, NextFunction } from "express";
-import crypto from "crypto";
 import { pool } from "../db.js";
-
-function hashToken(token: string) {
-  return crypto.createHash("sha256").update(token).digest("hex");
-}
+import { hashToken } from "../utils/hash.js";
 
 export const authMiddleware = async ( req: Request, res: Response, next: NextFunction, ) => {
   
