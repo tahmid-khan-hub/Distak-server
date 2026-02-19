@@ -1,6 +1,7 @@
 import express from "express";
 import cors from "cors";
 import tokenRoutes from "./routes/token.routes.js";
+import authRoutes from "./routes/auth.routes.js";
 import cookieParser from "cookie-parser";
 
 const app = express();
@@ -19,5 +20,6 @@ app.get("/", (_, res) => {
 });
 
 app.use("/api", tokenRoutes);
+app.use("/api", authRoutes);
 
 export default app;
