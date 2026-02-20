@@ -12,7 +12,28 @@ export const generateTokenHandler = async(req: Request, res: Response) => {
 
         const tokenHash = hashToken(token);
 
-        // Check if token already exists
+        // Check if token already exists in cookies
+        const existingCookie = req.cookies.chat_token;
+
+        if(existingCookie){
+            const existingCookieHash = hashToken(existingCookie);
+
+            const existingUser = await pool.query("SELECT id, plan, expires_at FROM users WHERE token_hash = $1", 
+            [existingCookieHash] );
+
+            if(existingUser.rows.length > 0) {
+                const user = existingUser.rows[0];
+                // Block if not expired
+                if(user.expires_at && new Date(user.expires_at) > new Date()){
+                    return res.status(400).json({ 
+                        error: "Token already exists and is not expired",
+                        expiresAt: user.expires_at,
+                    });
+                }
+            }
+        }
+
+        // Check token uniqueness 
         const existing = await pool.query(
             "SELECT id FROM users WHERE token_hash = $1", [tokenHash] );
 
