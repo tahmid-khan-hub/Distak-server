@@ -14,7 +14,7 @@ export const authMiddleware = async ( req: Request, res: Response, next: NextFun
     const tokenHash = hashToken(token);
 
     // Check if token already exists
-    const existing = await pool.query("SELECT id, expires_at FROM users WHERE token_hash = $1", [tokenHash] );
+    const existing = await pool.query("SELECT id, expires_at, plan FROM users WHERE token_hash = $1", [tokenHash] );
 
     if (existing.rowCount === 0) return res.status(401).json({ error: "Invalid token" });
 
@@ -22,6 +22,9 @@ export const authMiddleware = async ( req: Request, res: Response, next: NextFun
 
     // Check expiration
     if (user.expires_at && new Date(user.expires_at) < new Date()) { return res.status(401).json({ error: "Token expired" }); }
+
+    // Attach user info to request
+    req.user = user;
         
     next();
   } catch (error) {
