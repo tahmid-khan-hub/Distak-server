@@ -7,6 +7,7 @@ router.get("/session", authMiddleware, (req, res) => {
         id: req.user?.id,
         plan: req.user?.plan,
         expiresAt: req.user?.expires_at,
+        token: req.cookies.chat_token || null,
      });
 });
 
