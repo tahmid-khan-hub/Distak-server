@@ -14,7 +14,7 @@ export const authMiddleware = async ( req: Request, res: Response, next: NextFun
     const tokenHash = hashToken(token);
 
     // Check if token already exists
-    const existing = await pool.query("SELECT id, expires_at, plan FROM users WHERE token_hash = $1", [tokenHash] );
+    const existing = await pool.query("SELECT id, expires_at, plan, nickname FROM users WHERE token_hash = $1", [tokenHash] );
 
     if (existing.rowCount === 0) return res.status(401).json({ error: "Invalid token" });
 

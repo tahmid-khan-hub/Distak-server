@@ -6,6 +6,7 @@ declare module "express-serve-static-core" {
       id: string;
       plan: string;
       expires_at: Date | null;
+      nickname: string;
     };
   }
 }

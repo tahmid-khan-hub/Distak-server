@@ -2,6 +2,16 @@ import { Request, Response } from "express";
 import { pool } from "../db.js";
 import { hashToken } from "../utils/hash.js";
 
+const adjectives = ["silent", "ghost", "shadow", "hidden", "misty"]
+const nouns = ["fox", "wolf", "hawk", "storm", "echo"]
+
+const nickname = 
+  adjectives[Math.floor(Math.random() * adjectives.length)] + 
+  "_" + 
+  nouns[Math.floor(Math.random() * nouns.length)] + 
+  "_" + 
+  Math.floor(Math.random() * 1000)
+
 export const generateTokenHandler = async(req: Request, res: Response) => {
     try {
         const { token, plan } = req.body;
@@ -18,7 +28,7 @@ export const generateTokenHandler = async(req: Request, res: Response) => {
         if(existingCookie){
             const existingCookieHash = hashToken(existingCookie);
 
-            const existingUser = await pool.query("SELECT id, plan, expires_at FROM users WHERE token_hash = $1", 
+            const existingUser = await pool.query("SELECT id, plan, expires_at, nickname FROM users WHERE token_hash = $1", 
             [existingCookieHash] );
 
             if(existingUser.rows.length > 0) {
@@ -46,8 +56,8 @@ export const generateTokenHandler = async(req: Request, res: Response) => {
         else if (plan === "24h") expiresAt = new Date(Date.now() + 24 * 60 * 60 * 1000);
         
         await pool.query(
-            "INSERT INTO users (token_hash, plan,  expires_at) VALUES ($1, $2, $3)",
-            [tokenHash, plan, expiresAt]
+            "INSERT INTO users (token_hash, plan,  expires_at, nickname) VALUES ($1, $2, $3, $4)",
+            [tokenHash, plan, expiresAt, nickname]
         );
 
         // set cookie
