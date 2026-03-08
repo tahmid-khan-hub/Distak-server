@@ -1,16 +1,7 @@
 import { Request, Response } from "express";
 import { pool } from "../db.js";
 import { hashToken } from "../utils/hash.js";
-
-const adjectives = ["silent", "ghost", "shadow", "hidden", "misty"]
-const nouns = ["fox", "wolf", "hawk", "storm", "echo"]
-
-const nickname = 
-  adjectives[Math.floor(Math.random() * adjectives.length)] + 
-  "_" + 
-  nouns[Math.floor(Math.random() * nouns.length)] + 
-  "_" + 
-  Math.floor(Math.random() * 1000)
+import { GenerateNickname } from "../utils/nickname.js";
 
 export const generateTokenHandler = async(req: Request, res: Response) => {
     try {
@@ -21,6 +12,7 @@ export const generateTokenHandler = async(req: Request, res: Response) => {
         if (token.length < 16) return res.status(400).json({ error: "Invalid token format" });
 
         const tokenHash = hashToken(token);
+        const nickname = GenerateNickname();
 
         // Check if token already exists in cookies
         const existingCookie = req.cookies.chat_token;
