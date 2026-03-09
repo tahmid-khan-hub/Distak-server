@@ -2,6 +2,7 @@ import express from "express";
 import cors from "cors";
 import tokenRoutes from "./routes/token.routes.js";
 import authRoutes from "./routes/auth.routes.js";
+import chatRoutes from "./routes/chat.routes.js"
 import cookieParser from "cookie-parser";
 
 const app = express();
@@ -21,5 +22,7 @@ app.get("/", (_, res) => {
 
 app.use("/api", tokenRoutes);
 app.use("/api", authRoutes);
+
+app.use("/api", chatRoutes)
 
 export default app;
