@@ -57,4 +57,44 @@ router.get("/chat/search/:token", authMiddleware, async(req, res) => {
     }
 })
 
+router.post("/chat", authMiddleware, async(req, res) => {
+    const userId = req.user?.id;
+    const { targetUserId } = req.body;
+
+    if (!targetUserId)  return res.status(400).json({ error: "targetUserId is required" });
+
+    if(targetUserId === userId) return res.status(400).json({ error: "Cannot start conversation with yourself" });
+
+    try {
+        // check if a DM conversation already exists between these 2 users
+        const existing = await pool.query(`
+            SELECT c.id FROM conversations c
+            JOIN conversation_members cm1 ON cm1.conversation_id = c.id AND cm1.user_id = $1
+            JOIN conversation_members cm2 ON cm2.conversation_id = c.id AND cm2.user_id = $1
+            WHERE c.is_group = FALSE
+            LIMIT 1`,
+        [userId, targetUserId]);
+
+        if (existing.rows.length > 0)  return res.json({ id: existing.rows[0].id, alreadyExists: true });
+
+        // create new conversation
+        const ConversationResult = await pool.query(`
+            INSERT INTO conversations (is_group, created_by) VALUES (FALSE, $1) RETURNING id`, 
+        [userId]);
+
+        const conversationId = ConversationResult.rows[0].id;
+
+        // add both memebers
+        await pool.query(`
+            INSERT INTO conversation_members (conversation_id, user_id) VALUES ($1, $2), ($1, $3)`,
+        [conversationId, userId, targetUserId]);
+
+        return res.status(201).json({ id: conversationId, alreadyExists: false });
+    } catch (error) {
+        console.error("Create conversation error:", error);
+        return res.status(500).json({ error: "Server error" });
+    }
+  
+})
+
 export default router;
