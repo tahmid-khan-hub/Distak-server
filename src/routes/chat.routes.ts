@@ -19,7 +19,7 @@ router.get("/chat", authMiddleware, async(req, res) => {
                         LIMIT 1
                     )
                     ELSE c.name
-                END AS display_name
+                END AS nickname
                 FROM conversations c
                 JOIN conversation_members cm ON cm.conversation_id = c.id
                 WHERE cm.user_id = $1
@@ -70,7 +70,7 @@ router.post("/chat", authMiddleware, async(req, res) => {
         const existing = await pool.query(`
             SELECT c.id FROM conversations c
             JOIN conversation_members cm1 ON cm1.conversation_id = c.id AND cm1.user_id = $1
-            JOIN conversation_members cm2 ON cm2.conversation_id = c.id AND cm2.user_id = $1
+            JOIN conversation_members cm2 ON cm2.conversation_id = c.id AND cm2.user_id = $2
             WHERE c.is_group = FALSE
             LIMIT 1`,
         [userId, targetUserId]);
